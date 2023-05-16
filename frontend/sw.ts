@@ -25,7 +25,7 @@ let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
 // may only happen when running in development mode, but after a frontend build
 let hasRootEntry = manifestEntries.findIndex((entry) => entry.url === '.') >= 0;
 if (self.additionalManifestEntries?.length) {
-  manifestEntries.push(...self.additionalManifestEntries.filter( (entry) => entry.url !== '.' || !hasRootEntry));
+  manifestEntries.push(...self.additionalManifestEntries.filter((entry) => entry.url !== '.' || !hasRootEntry));
 }
 
 const offlinePath = OFFLINE_PATH;
@@ -144,22 +144,31 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Handle web push
+//AQUI AGREGO OYENTES PARA LAS NOTIFICACIONES PUSH ENTRANTES
 
+/*escucha el event push que es disparado cuando una notificación push es recibida en el Service Worker*/
 self.addEventListener('push', (e) => {
   const data = e.data?.json();
   if (data) {
+    /*Cuando se recibe la notificación, se extrae su contenido 
+    y se muestra una notificación utilizando la API showNotification que proporciona la plataforma web.*/
     self.registration.showNotification(data.title, {
+      /*La notificación se muestra con el título y el cuerpo extraídos del objeto data*/
       body: data.body,
     });
   }
 });
 
+/*se lanza cuando el usuario hace clic en la notificación*/
 self.addEventListener('notificationclick', (e) => {
+  /*al pinchar sobre la notificación se cierra y luego llama a la funcions focusOrOpenWindow()*/
   e.notification.close();
   e.waitUntil(focusOrOpenWindow());
 });
 
+/*lo que hace es busca una ventana abierta de la aplicación web en la misma URL utilizando el método matchAll() 
+del objeto clients que proporciona la plataforma web. Si encuentra una ventana abierta, se enfoca en esa ventana utilizando el método focus(). 
+Si no encuentra una ventana abierta, abre una nueva ventana de la aplicación utilizando el método openWindow() del objeto clients*/
 async function focusOrOpenWindow() {
   const url = new URL('/', self.location.origin).href;
 

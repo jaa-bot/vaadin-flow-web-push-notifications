@@ -2,6 +2,7 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@angular/http": "^7.2.16",
     "@polymer/polymer": "3.5.1",
     "@vaadin/accordion": "24.0.0-rc1",
     "@vaadin/app-layout": "24.0.0-rc1",
@@ -9,7 +10,7 @@
     "@vaadin/avatar-group": "24.0.0-rc1",
     "@vaadin/bundles": "24.0.0-rc1",
     "@vaadin/button": "24.0.0-rc1",
-    "@vaadin/checkbox": "24.0.0-rc1",
+    "@vaadin/checkbox": "^24.0.0-rc1",
     "@vaadin/checkbox-group": "24.0.0-rc1",
     "@vaadin/combo-box": "24.0.0-rc1",
     "@vaadin/common-frontend": "0.0.17",
@@ -168,7 +169,7 @@
       "workbox-core": "6.5.4",
       "workbox-precaching": "6.5.4"
     },
-    "hash": "6344209669969d2cdf793fd363d25a83b0c12118444890c8304098210e5208fc"
+    "hash": "15b86a03cb69f02e6cc54e3abf7e6f81920b8b0ff32a3ff92ad7b7acae98d17b"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -235,6 +236,7 @@
     "lit": "$lit",
     "@polymer/polymer": "$@polymer/polymer",
     "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
-    "date-fns": "$date-fns"
+    "date-fns": "$date-fns",
+    "@angular/http": "$@angular/http"
   }
 }
