@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,19 +27,16 @@ public class TokenController {
         return list;
     }
 
-    @PostMapping("/añadirToken")
     public ResponseEntity<?> añadirToken(@RequestBody Token token) {
         tokenService.save(token);
         return new ResponseEntity(null, HttpStatus.OK);
     }
 
-    @PostMapping("/eliminarToken/{id}")
-    public ResponseEntity<?> eliminarToken(@PathVariable("idNavegador")String id) {
-        tokenService.delete(id);
+    public ResponseEntity<?> eliminarToken(@PathVariable("endpoint")String endpoint) {
+        tokenService.delete(endpoint);
         return new ResponseEntity(null, HttpStatus.OK);
     }
 
-    @PostMapping("/cogerTokenId")
     public Optional<Token> cogerIdNavegador(@PathVariable("idNavegador")String id) {
         return tokenService.getOne(id);
     }

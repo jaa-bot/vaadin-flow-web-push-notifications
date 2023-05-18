@@ -60,16 +60,6 @@ export class WebPushToggle extends LitElement {
     this.subscribed = !!(await registration?.pushManager.getSubscription());
   }
 
-  /*tokenURL = 'https://localhost:8090/token/'
-
-  constructor(private httpClient: HttpClient) {
-    super();
-  }
-
-  public save(token: Token): Observable<any> {
-    return this.httpClient.post<any>(this.tokenURL + 'create', token);
-  }*/
-
   private isValidString(str: any): str is string {
     return typeof str === 'string' && str.trim().length > 0;
   }
@@ -83,11 +73,7 @@ export class WebPushToggle extends LitElement {
         userVisibleOnly: true,
         applicationServerKey: this.isValidString(this.publicKey) ? this.urlB64ToUint8Array(this.publicKey) : undefined,
       });
-      /*const authKey = subscription?.getKey('auth');
-      const authP256dh = subscription?.getKey('p256dh');
-      const token = new Token(" ", subscription!.endpoint, authKey ? btoa(String.fromCharCode(...new Uint8Array(authKey))) : '',
-        authP256dh ? btoa(String.fromCharCode(...new Uint8Array(authP256dh))) : '');
-      //this.save(token);*/
+
 
       if (subscription) {
         this.subscribed = true;

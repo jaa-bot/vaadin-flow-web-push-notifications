@@ -1,12 +1,16 @@
 package org.vaadin.marcus.webpush;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import nl.martijndwars.webpush.Notification;
-import nl.martijndwars.webpush.PushService;
-import nl.martijndwars.webpush.Subscription;
-import nl.martijndwars.webpush.Subscription.Keys;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -16,13 +20,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.vaadin.marcus.controller.TokenController;
 import org.vaadin.marcus.entity.Token;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.security.Security;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.PostConstruct;
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+import nl.martijndwars.webpush.Subscription.Keys;
 
 @Service
 public class WebPushService {
@@ -46,6 +52,10 @@ public class WebPushService {
     @PostConstruct
     private void init() throws GeneralSecurityException {
         Security.addProvider(new BouncyCastleProvider());
+        // publicKey =
+        // Base64.getEncoder().encodeToString(publicKey.getBytes(StandardCharsets.UTF_8));
+        // privateKey =
+        // Base64.getEncoder().encodeToString(privateKey.getBytes(StandardCharsets.UTF_8));
         pushService = new PushService(publicKey, privateKey, subject);
         this.endpointToSubscription.addAll(tokenController.list());
     }
@@ -58,15 +68,17 @@ public class WebPushService {
     // enviarle y el objeto tipo Subscription
     public void sendNotification(Token subscription, String messageJson) {
         try {
+            System.out.println("-------------------------------------------------");
             System.out.println("EN EL METODO SEND NOTIFICATION: " + subscription.getEndpoint());
             System.out.println(" auth: " + subscription.getAuth() + " p256dh: " + subscription.getP256dh());
 
-            HttpResponse response = pushService.send(new Notification(new Subscription(subscription.getEndpoint(),
-                    new Keys(subscription.getAuth(), subscription.getP256dh())), messageJson));
+            Keys keys = new Keys(String.valueOf(subscription.getAuth()), String.valueOf(subscription.getP256dh()));
+            Subscription subs = new Subscription(String.valueOf(subscription.getEndpoint()), keys);
+            
+            //EN ESTA LINEA DA EL ERROR UWUNT
+            Notification notification = new Notification(subs, messageJson);
 
-                    System.out.println("holaaaaaaaaa");
-
-                    
+            HttpResponse response = pushService.send(notification);
 
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 201) {
@@ -77,36 +89,48 @@ public class WebPushService {
             }
         } catch (GeneralSecurityException | IOException | JoseException | ExecutionException
                 | InterruptedException e) {
-                    System.out.println("YEEEAAAAH BUDDY");
             e.printStackTrace();
         }
     }
 
     // metodo para agregar al usuario a la memoria y enviarle notificaciones
     public void subscribe(Token subscription) {
+        System.out.println("-------------------------------------------------");
         System.out.println("Endpoint: " + subscription.getEndpoint() + " auth: " + subscription.getAuth() + " p256dh: "
                 + subscription.getP256dh());
 
-                System.out.println("ID DEL SUBCRIBE: " + subscription.getEndpoint());
+        System.out.println("-------------------------------------------------");
+        System.out.println("ID DEL SUBCRIBE: " + subscription.getEndpoint());
 
-                guardarToken(new Token(subscription.getEndpoint(), subscription.getAuth(), subscription.getP256dh(), "JUAN"));
-
+        guardarToken(new Token(subscription.getEndpoint(), subscription.getAuth(), subscription.getP256dh(), "JUAN"));
 
         // solo usaremos la URL del punto final como clave para almacenar suscripciones
         // en la memoria.
         // objetivo es guardar id del usuario y lo que necesita para enviar
         // notificaciones que son el endpoint, auth, p256dh
-        endpointToSubscription.add(subscription);
+        this.endpointToSubscription.clear();
+        this.endpointToSubscription.addAll(tokenController.list());
+        System.out.println("-------------------------------------------------");
+        for (int i = 0; i < this.endpointToSubscription.size(); i++){
+            System.out.println(this.endpointToSubscription.get(i).getEndpoint());
+        }  
     }
 
     // metodo que elimina el endpoint del mapa de las suscripciones
     public void unsubscribe(Token subscription) {
-        System.out.println("Se fue:  " + subscription.getEndpoint());
 
+        System.out.println("-------------------------------------------------");
         System.out.println("ID DEL UNSUBCRIBE: " + subscription.getEndpoint());
+        ;
 
         eliminarToken(subscription.getEndpoint());
-        endpointToSubscription.remove(subscription);
+
+        this.endpointToSubscription.clear();
+        this.endpointToSubscription.addAll(tokenController.list());
+        System.out.println("-------------------------------------------------");
+        for (int i = 0; i < this.endpointToSubscription.size(); i++){
+            System.out.println(this.endpointToSubscription.get(i).getEndpoint());
+        }  
     }
 
     public record Message(String title, String body) {
@@ -121,13 +145,9 @@ public class WebPushService {
             // en el mapa, con el metodo sendNotification
             String msg = mapper.writeValueAsString(new Message(title, body));
 
-            for(int i = 0; i < endpointToSubscription.size(); i++){
+            for (int i = 0; i < endpointToSubscription.size(); i++) {
                 sendNotification(endpointToSubscription.get(i), msg);
             }
-            (endpointToSubscription).forEach(subscription -> {
-                System.out.println("QUEEEE PASAAA??   " + subscription);
-                sendNotification(subscription, msg);
-            });
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -153,13 +173,38 @@ public class WebPushService {
      * }
      */
 
+    // tengo que mirar esto bien
     public void guardarToken(Token token) {
-        tokenController.añadirToken(token);
+        String endpoint = token.getEndpoint();
+        String auth = token.getAuth();
+        String p256dh = token.getP256dh();
 
+        tokenController.añadirToken(new Token(endpoint, auth, p256dh, "JUAN"));
     }
 
     public void eliminarToken(String endpoint) {
         tokenController.eliminarToken(endpoint);
     }
+
+    /*
+     * public static String base64UrlEncode(String input) {
+     * byte[] encodedBytes =
+     * Base64.getUrlEncoder().encode(input.getBytes(StandardCharsets.UTF_8));
+     * return new String(encodedBytes, StandardCharsets.UTF_8)
+     * .replace("+", "-")
+     * .replace("/", "_")
+     * .replaceAll("=+$", "");
+     * }
+     * 
+     * public static String base64UrlDecode(String input) {
+     * input = input.replace("-", "+").replace("_", "/");
+     * int padding = 4 - (input.length() % 4);
+     * input += "=".repeat(padding);
+     * 
+     * byte[] decodedBytes =
+     * Base64.getUrlDecoder().decode(input.getBytes(StandardCharsets.UTF_8));
+     * return new String(decodedBytes, StandardCharsets.UTF_8);
+     * }
+     */
 
 }
