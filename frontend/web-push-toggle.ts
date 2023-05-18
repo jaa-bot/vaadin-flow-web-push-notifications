@@ -71,7 +71,7 @@ export class WebPushToggle extends LitElement {
       const registration = await navigator.serviceWorker.getRegistration();
       const subscription = await registration?.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.isValidString(this.publicKey) ? this.urlB64ToUint8Array(this.publicKey) : undefined,
+        applicationServerKey: this.urlB64ToUint8Array(this.publicKey)
       });
 
 

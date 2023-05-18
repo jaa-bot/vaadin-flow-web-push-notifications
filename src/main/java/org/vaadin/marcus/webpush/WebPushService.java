@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -72,10 +69,9 @@ public class WebPushService {
             System.out.println("EN EL METODO SEND NOTIFICATION: " + subscription.getEndpoint());
             System.out.println(" auth: " + subscription.getAuth() + " p256dh: " + subscription.getP256dh());
 
-            Keys keys = new Keys(String.valueOf(subscription.getAuth()), String.valueOf(subscription.getP256dh()));
-            Subscription subs = new Subscription(String.valueOf(subscription.getEndpoint()), keys);
+            Keys keys = new Keys(subscription.getP256dh(), subscription.getAuth());
+            Subscription subs = new Subscription(subscription.getEndpoint(), keys);
             
-            //EN ESTA LINEA DA EL ERROR UWUNT
             Notification notification = new Notification(subs, messageJson);
 
             HttpResponse response = pushService.send(notification);

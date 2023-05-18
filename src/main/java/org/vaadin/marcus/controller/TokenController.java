@@ -40,7 +40,4 @@ public class TokenController {
     public Optional<Token> cogerIdNavegador(@PathVariable("idNavegador")String id) {
         return tokenService.getOne(id);
     }
-
-
-    
 }
