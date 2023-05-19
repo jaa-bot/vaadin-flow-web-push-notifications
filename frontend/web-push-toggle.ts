@@ -56,12 +56,9 @@ export class WebPushToggle extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    const registration = await navigator.serviceWorker.getRegistration();
+    const registration = await navigator.serviceWorker?.getRegistration();
     this.subscribed = !!(await registration?.pushManager.getSubscription());
-  }
-
-  private isValidString(str: any): str is string {
-    return typeof str === 'string' && str.trim().length > 0;
+    console.log(registration);
   }
 
   async subscribe() {
@@ -109,7 +106,6 @@ export class WebPushToggle extends LitElement {
   }
 
   private urlB64ToUint8Array(base64String: string) {
-    console.log("sueña con algo mas complicado");
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
     const rawData = window.atob(base64);

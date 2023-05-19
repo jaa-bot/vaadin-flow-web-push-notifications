@@ -37,7 +37,7 @@ public class TokenController {
         return new ResponseEntity(null, HttpStatus.OK);
     }
 
-    public Optional<Token> cogerIdNavegador(@PathVariable("idNavegador")String id) {
+    public Optional<Token> cogerId_user(@PathVariable("id_user")String id) {
         return tokenService.getOne(id);
     }
 }

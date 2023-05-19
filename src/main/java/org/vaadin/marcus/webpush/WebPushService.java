@@ -6,6 +6,7 @@ import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
@@ -71,7 +72,7 @@ public class WebPushService {
 
             Keys keys = new Keys(subscription.getP256dh(), subscription.getAuth());
             Subscription subs = new Subscription(subscription.getEndpoint(), keys);
-            
+
             Notification notification = new Notification(subs, messageJson);
 
             HttpResponse response = pushService.send(notification);
@@ -107,9 +108,9 @@ public class WebPushService {
         this.endpointToSubscription.clear();
         this.endpointToSubscription.addAll(tokenController.list());
         System.out.println("-------------------------------------------------");
-        for (int i = 0; i < this.endpointToSubscription.size(); i++){
+        for (int i = 0; i < this.endpointToSubscription.size(); i++) {
             System.out.println(this.endpointToSubscription.get(i).getEndpoint());
-        }  
+        }
     }
 
     // metodo que elimina el endpoint del mapa de las suscripciones
@@ -124,9 +125,9 @@ public class WebPushService {
         this.endpointToSubscription.clear();
         this.endpointToSubscription.addAll(tokenController.list());
         System.out.println("-------------------------------------------------");
-        for (int i = 0; i < this.endpointToSubscription.size(); i++){
+        for (int i = 0; i < this.endpointToSubscription.size(); i++) {
             System.out.println(this.endpointToSubscription.get(i).getEndpoint());
-        }  
+        }
     }
 
     public record Message(String title, String body) {
@@ -149,25 +150,22 @@ public class WebPushService {
         }
     }
 
-    /*
-     * public void notifyOneUser(String title, String body, int userId) {
-     * try {
-     * String msg = mapper.writeValueAsString(new Message(title, body));
-     * (endpointToSubscription).forEach(subscription -> {
-     * //aqui un if que compare si existe en la base de datos un usuario con ese id
-     * if (existeUser(userId)) {
-     * sendNotification(subscription, msg);
-     * }
-     * else{
-     * System.out.println("No existe el usuario con id: " + userId);
-     * }
-     * });
-     * } catch (JsonProcessingException e) {
-     * e.printStackTrace();
-     * throw new RuntimeException(e);
-     * }
-     * }
-     */
+    public void notifyOneUser(String title, String body) {
+        try {
+            String msg = mapper.writeValueAsString(new Message(title, body));
+
+            for (int i = 0; i < endpointToSubscription.size(); i++) {
+                Optional<Token> token = tokenController.cogerId_user(endpointToSubscription.get(i).getEndpoint());
+                
+                if (token.get().getIdUser() .equals("JUAN")) {
+                    sendNotification(endpointToSubscription.get(i), msg);
+                }
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
 
     // tengo que mirar esto bien
     public void guardarToken(Token token) {

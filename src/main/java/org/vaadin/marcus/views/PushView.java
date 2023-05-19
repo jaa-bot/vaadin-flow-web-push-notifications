@@ -25,7 +25,8 @@ public class PushView extends VerticalLayout {
         var messageInput = new TextField("Mensaje:");
         //boton para enviar la notificaión a todos los usuarios
         var sendButton = new Button("Notificar a todos los usuarios! 📝");
-        var messageLayout = new HorizontalLayout(messageInput, sendButton);
+        var sendButtonJuan = new Button("Notificar a juan! 📝");
+        var messageLayout = new HorizontalLayout(messageInput, sendButton, sendButtonJuan);
         messageLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 
         //se añade un encabezado con el toggle y el mensaje
@@ -45,5 +46,6 @@ public class PushView extends VerticalLayout {
 
         //y por ultimo añade un listener al boton y utiliza el metodo notifiAll para enviar el mensaje
         sendButton.addClickListener(e -> webPushService.notifyAll("Mensaje del usuario", messageInput.getValue()));
+        sendButtonJuan.addClickListener(e -> webPushService.notifyOneUser("Mensaje del usuario", messageInput.getValue()));
     }
 }
